@@ -7,7 +7,7 @@ cur = con.cursor()
 def check_bd():
     cur.execute("""
                 CREATE TABLE IF NOT EXISTS users (
-                id INT PRIMARY KEY,
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
                 username VARCHAR(255) NOT NULL,
                 password VARCHAR(255) NOT NULL,
                 name VARCHAR(255)
@@ -15,8 +15,8 @@ def check_bd():
                 """)
     cur.execute("""
                 CREATE TABLE IF NOT EXISTS tasks (
-                id INT PRIMARY KEY,
-                user_id INT,
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER,
                 title VARCHAR(255) NOT NULL,
                 descriptions VARCHAR(255),
                 deadline_date DATETIME,
@@ -25,5 +25,12 @@ def check_bd():
                 """)
     con.commit()
 
+def add_user(username, password, name):
+    cur.execute("""
+                INSERT INTO users (username, password, name)
+                VALUES (?, ?, ?)""", (username, password, name))
+
+    con.commit()
 
 check_bd()
+add_user('user', '123456', 'Лев')
