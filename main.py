@@ -29,8 +29,22 @@ def add_user(username, password, name):
     cur.execute("""
                 INSERT INTO users (username, password, name)
                 VALUES (?, ?, ?)""", (username, password, name))
-
     con.commit()
 
+def login(username, password) -> bool:
+    result = cur.execute("""
+                         SELECT username, password, name
+                         FROM users
+                         WHERE username = (?)""", (username,)).fetchone()
+    if result is None:
+        print('Нет такого пользователя.')
+        return False
+    elif result[1] != password:
+        print('Неверный пароль.')
+        return False
+    print(f'Добро пожаловать, {result[2]}!')
+    return True
+
 check_bd()
-add_user('user', '123456', 'Лев')
+# add_user('user', '123456', 'Лев')
+login('user', '123456')
