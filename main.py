@@ -1,3 +1,4 @@
+import datetime
 import sqlite3
 
 con = sqlite3.connect('to_do_list.sqlite')
@@ -8,9 +9,9 @@ def check_bd():
     cur.execute("""
                 CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                username VARCHAR(255) NOT NULL,
+                username VARCHAR(255) NOT NULL UNIQUE,
                 password VARCHAR(255) NOT NULL,
-                name VARCHAR(255)
+                name VARCHAR(255) NOT NULL
                 );
                 """)
     cur.execute("""
@@ -25,11 +26,13 @@ def check_bd():
                 """)
     con.commit()
 
+
 def add_user(username, password, name):
     cur.execute("""
                 INSERT INTO users (username, password, name)
                 VALUES (?, ?, ?)""", (username, password, name))
     con.commit()
+
 
 def login(username, password) -> bool:
     result = cur.execute("""
@@ -45,6 +48,22 @@ def login(username, password) -> bool:
     print(f'Добро пожаловать, {result[2]}!')
     return True
 
+
+def add_task(user_id, title, description=None, date=None):
+    cur.execute("""
+                INSERT INTO tasks (user_id, title, descriptions, deadline_date)
+                VALUES (?, ?, ?, ?)""", (user_id, title, description, date))
+    con.commit()
+
+
+def delete_task(task_id):
+    cur.execute("""
+                DELETE FROM tasks
+                WHERE id = (?)""", (task_id,))
+    con.commit()
+
 check_bd()
 # add_user('user', '123456', 'Лев')
-login('user', '123456')
+# login('user', '123456')
+# add_task(1, 'Помыть полы')
+delete_task(2)
