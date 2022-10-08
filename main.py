@@ -1,69 +1,60 @@
-import datetime
-import sqlite3
+import sys
+from PyQt5 import QtWidgets, uic
+from PyQt5.QtWidgets import QTableWidgetItem
 
-con = sqlite3.connect('to_do_list.sqlite')
-cur = con.cursor()
-
-
-def check_bd():
-    cur.execute("""
-                CREATE TABLE IF NOT EXISTS users (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                username VARCHAR(255) NOT NULL UNIQUE,
-                password VARCHAR(255) NOT NULL,
-                name VARCHAR(255) NOT NULL
-                );
-                """)
-    cur.execute("""
-                CREATE TABLE IF NOT EXISTS tasks (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id INTEGER,
-                title VARCHAR(255) NOT NULL,
-                descriptions VARCHAR(255),
-                deadline_date DATETIME,
-                FOREIGN KEY (user_id) REFERENCES users (id)
-                );
-                """)
-    con.commit()
+from db_opertions import load_tasks, load_task_detail
 
 
-def add_user(username, password, name):
-    cur.execute("""
-                INSERT INTO users (username, password, name)
-                VALUES (?, ?, ?)""", (username, password, name))
-    con.commit()
+def except_hook(cls, exception, traceback):
+    """
+    Printing the traceback to stdout/stderr.
+    """
+    sys.__excepthook__(cls, exception, traceback)
 
 
-def login(username, password) -> bool:
-    result = cur.execute("""
-                         SELECT username, password, name
-                         FROM users
-                         WHERE username = (?)""", (username,)).fetchone()
-    if result is None:
-        print('Нет такого пользователя.')
-        return False
-    elif result[1] != password:
-        print('Неверный пароль.')
-        return False
-    print(f'Добро пожаловать, {result[2]}!')
-    return True
+sys.excepthook = except_hook
 
 
-def add_task(user_id, title, description=None, date=None):
-    cur.execute("""
-                INSERT INTO tasks (user_id, title, descriptions, deadline_date)
-                VALUES (?, ?, ?, ?)""", (user_id, title, description, date))
-    con.commit()
+class App(QtWidgets.QMainWindow):
+    def __init__(self):
+        super().__init__()
+        uic.loadUi('to_do_list.ui', self)
+        self.add_task_button.clicked.connect(self.add_task)
+        self.delete_task_button.clicked.connect(self.delete_task)
+        self.load_tasks()
+        self.tableWidget.clicked.connect(self.task_detail)
+
+    def load_tasks(self):
+        tasks = load_tasks()
+        print(tasks)
+        if tasks is not None:
+            self.tableWidget.setColumnCount(4)
+            self.tableWidget.setRowCount(len(tasks))
+            self.tableWidget.setHorizontalHeaderLabels(('№', 'Автор', 'Название', 'Описание', 'Дата'))
+            self.tableWidget.setVerticalHeaderLabels([str(i) for i in range(1, len(tasks) + 1)])
+            for i, row in enumerate(tasks):
+                for j, elem in enumerate(row):
+                    self.tableWidget.setItem(i, j, QTableWidgetItem(str(elem)))
+            self.tableWidget.resizeColumnsToContents()
+
+    def task_detail(self, item):
+        task_id = self.tableWidget.model().index(item.row(), 0).data()
+        task = load_task_detail(task_id)
+        self.task_name.setText(task[2])
+        self.task_description.setText(task[3])
+
+    def add_task(self):
+        pass
+
+    def delete_task(self):
+        pass
+
+def main():
+    app = QtWidgets.QApplication(sys.argv)
+    window = App()
+    window.show()
+    sys.exit(app.exec_())
 
 
-def delete_task(task_id):
-    cur.execute("""
-                DELETE FROM tasks
-                WHERE id = (?)""", (task_id,))
-    con.commit()
-
-check_bd()
-# add_user('user', '123456', 'Лев')
-# login('user', '123456')
-# add_task(1, 'Помыть полы')
-delete_task(2)
+if __name__ == '__main__':
+    main()
