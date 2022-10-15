@@ -26,7 +26,7 @@ def check_bd():
     con.commit()
 
 
-def add_user(username, password, name):
+def add_user(username, password, name=None):
     cur.execute("""
                 INSERT INTO users (username, password, name)
                 VALUES (?, ?, ?)""", (username, password, name))
