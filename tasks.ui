@@ -72,7 +72,7 @@
     <string>Описание</string>
    </property>
   </widget>
-  <widget class="QTextEdit" name="task_editor">
+  <widget class="QTextEdit" name="task_description">
    <property name="geometry">
     <rect>
      <x>80</x>
@@ -106,6 +106,19 @@
    </property>
    <property name="text">
     <string>Удалить задачу</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="add_task_button">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>410</y>
+     <width>381</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Добавить задачу</string>
    </property>
   </widget>
  </widget>

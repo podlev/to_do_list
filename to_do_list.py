@@ -1,14 +1,13 @@
 import sys
-from PyQt5 import QtWidgets, uic, QtGui
+
+from PyQt5 import QtWidgets, uic
 from PyQt5.QtWidgets import QMessageBox, QListWidgetItem
 
-
-from db_opertions import add_user, login, load_tasks, load_task_detail
+from db_opertions import add_user, login, load_tasks, load_task_detail, delete_task, add_task
 
 
 def except_hook(cls, exception, traceback):
     sys.__excepthook__(cls, exception, traceback)
-
 
 sys.excepthook = except_hook
 
@@ -49,19 +48,37 @@ class TasksWindow(QtWidgets.QWidget):
         super().__init__()
         uic.loadUi('tasks.ui', self)
         self.load_tasks_button.clicked.connect(self.load_tasks)
+        self.delete_task_button.clicked.connect(self.delete_task)
+        self.add_task_button.clicked.connect(self.add_task)
         self.tasks_list.itemClicked.connect(self.load_task_detail)
 
+
     def load_tasks(self):
-        tasks = load_tasks()
+        self.tasks = load_tasks()
         self.tasks_list.clear()
-        for task in tasks:
-            self.tasks_list.addItem(QListWidgetItem(f'{task[0]} {task[2]}'))
+        for task in self.tasks:
+            self.tasks_list.addItem(QListWidgetItem(task[2]))
 
-    def load_task_detail(self, item):
-        id = item.text().split()[0]
+    def load_task_detail(self):
+        id = self.tasks[self.tasks_list.currentRow()][0]
         task = load_task_detail(id)
-        print(task)
+        self.task_title.setText(task[2])
+        self.task_description.setText(task[3])
 
+    def delete_task(self):
+        id = self.tasks[self.tasks_list.currentRow()][0]
+        delete_task(id)
+        self.load_tasks()
+        self.task_title.setText('')
+        self.task_description.setText('')
+
+    def add_task(self):
+        title = self.task_title.text()
+        description = self.task_description.toPlainText()
+        add_task(1, title, description)
+        self.load_tasks()
+        self.task_title.setText('')
+        self.task_description.setText('')
 
 def main():
     app = QtWidgets.QApplication(sys.argv)
